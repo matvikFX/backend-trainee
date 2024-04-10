@@ -1,60 +1,73 @@
-# Simple Makefile for a Go project
+# ==============================================================================
+# Go migrate postgresql
 
-# Build the application
-all: build
+force:
+	migrate -database postgres://postgres:postgres@localhost:5432/auth_db?sslmode=disable -path migrations force 1
+
+version:
+	migrate -database postgres://postgres:postgres@localhost:5432/auth_db?sslmode=disable -path migrations version
+
+migrate_up:
+	migrate -database postgres://postgres:postgres@localhost:5432/auth_db?sslmode=disable -path migrations up 1
+
+migrate_down:
+	migrate -database postgres://postgres:postgres@localhost:5432/auth_db?sslmode=disable -path migrations down 1
+
+
+# ==============================================================================
+# Tools commands
+
+swaggo:
+	echo "Starting swagger generating"
+	swag init -g **/**/*.go
+
+
+# ==============================================================================
+# Main
+
+run:
+	go run ./cmd/api/main.go
 
 build:
-	@echo "Building..."
-	
-	@go build -o main cmd/api/main.go
+	go build ./cmd/api/main.go
 
-# Run the application
-run:
-	@go run cmd/api/main.go
-
-# Create DB container
-docker-run:
-	@if docker compose up 2>/dev/null; then \
-		: ; \
-	else \
-		echo "Falling back to Docker Compose V1"; \
-		docker-compose up; \
-	fi
-
-# Shutdown DB container
-docker-down:
-	@if docker compose down 2>/dev/null; then \
-		: ; \
-	else \
-		echo "Falling back to Docker Compose V1"; \
-		docker-compose down; \
-	fi
-
-# Test the application
 test:
-	@echo "Testing..."
-	@go test ./tests -v
+	go test -cover ./...
 
-# Clean the binary
+
+# ==============================================================================
+# Modules support
+
+deps-reset:
+	git checkout -- go.mod
+	go mod tidy
+	go mod vendor
+
+tidy:
+	go mod tidy
+	go mod vendor
+
+deps-upgrade:
+	# go get $(go list -f '{{if not (or .Main .Indirect)}}{{.Path}}{{end}}' -m all)
+	go get -u -t -d -v ./...
+	go mod tidy
+	go mod vendor
+
+deps-cleancache:
+	go clean -modcache
+
+
+# ==============================================================================
+# Docker support
+
+FILES := $(shell docker ps -aq)
+
+down-local:
+	docker stop $(FILES)
+	docker rm $(FILES)
+
 clean:
-	@echo "Cleaning..."
-	@rm -f main
+	docker system prune -f
 
-# Live Reload
-watch:
-	@if command -v air > /dev/null; then \
-	    air; \
-	    echo "Watching...";\
-	else \
-	    read -p "Go's 'air' is not installed on your machine. Do you want to install it? [Y/n] " choice; \
-	    if [ "$$choice" != "n" ] && [ "$$choice" != "N" ]; then \
-	        go install github.com/cosmtrek/air@latest; \
-	        air; \
-	        echo "Watching...";\
-	    else \
-	        echo "You chose not to install air. Exiting..."; \
-	        exit 1; \
-	    fi; \
-	fi
-
-.PHONY: all build run test clean
+logs-local:
+	docker logs -f $(FILES)
