@@ -1,49 +1,46 @@
-# Project banner_service
+# Сервис баннеров
 
-One Paragraph of project description goes here
+Тестовое задание для стажёра Backend в Авито
 
-## Getting Started
+## Вопросы/Ответы
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+1. Баннер - JSON-документ неопределенной структуры?
+- Принял решение сохранять content в БД, как json стурктуру; в Go, как map[string]interface{}
+
+2. Делать ли авторизацию/логгировани и т.д.?
+- Посчитал это ненужным, потому что этот сервис связан с другими, уже готовыми, из-за того, что в задании есть пункты: "группа пользователей" и "домен/функциональность", поэтому сделал самую банальную проверку на "admin/user_token".
+
+3. Где хранить кэш?
+- Думал хранить в переменной Go, либо же в Redis, выбрал второй вариант, так как с ним легко работать, сложно ошибиться и главное Redis - это очень быстрая система хранения данных.
 
 ## MakeFile
 
-run all make commands with clean tests
-```bash
-make all build
-```
-
-build the application
+Компиляция проекта
 ```bash
 make build
 ```
 
-run the application
+Запуск проекта
 ```bash
 make run
 ```
 
-Create DB container
-```bash
-make docker-run
-```
-
-Shutdown DB container
-```bash
-make docker-down
-```
-
-live reload the application
-```bash
-make watch
-```
-
-run the test suite
+Тест проекта
 ```bash
 make test
 ```
 
-clean up binary from the last build
+Возврат файла go.mod к последней версии, зафиксированной в git
 ```bash
-make clean
+make deps-reset
+```
+
+Обновление зависимостей до последних версий
+```bash
+make deps-upgrade
+```
+
+Синхронизация зависимостей
+```bash
+make tidy
 ```

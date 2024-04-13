@@ -18,12 +18,13 @@ type MockUseCaseMockRecorder struct {
 	mock *MockUseCase
 }
 
-func NewUseCaseMockRepository(ctrl *gomock.Controller) *MockUseCase {
+func NewMockUseCase(ctrl *gomock.Controller) *MockUseCase {
 	mock := &MockUseCase{ctrl: ctrl}
 	mock.recorder = &MockUseCaseMockRecorder{mock}
 	return mock
 }
 
+// EXPECT возвращает объект, который позволяет вызывающей стороне указать ожидаемое использование.
 func (m *MockUseCase) EXPECT() *MockUseCaseMockRecorder {
 	return m.recorder
 }
@@ -37,7 +38,7 @@ func (m *MockUseCase) Create(ctx context.Context, banner *models.BannerRequest) 
 }
 
 // Указывает на ожидаемый результат функции Create
-func (mr *MockRedisRepositoryMockRecorder) Create(ctx, banner interface{}) *gomock.Call {
+func (mr *MockUseCaseMockRecorder) Create(ctx, banner interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(
 		mr.mock, "Create", reflect.TypeOf((*MockRepository)(nil).Create),
@@ -54,7 +55,7 @@ func (m *MockUseCase) GetContent(ctx context.Context, tagID, featureID int, last
 }
 
 // Указывает на ожидаемый результат функции GetContent
-func (mr *MockRedisRepositoryMockRecorder) GetContent(ctx, tagID, featureID, last_rev interface{}) *gomock.Call {
+func (mr *MockUseCaseMockRecorder) GetContent(ctx, tagID, featureID, last_rev interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(
 		mr.mock, "GetContent", reflect.TypeOf((*MockRepository)(nil).GetContent),
@@ -71,7 +72,7 @@ func (m *MockUseCase) GetByID(ctx context.Context, bannerID int) (*models.Banner
 }
 
 // Указывает на ожидаемый результат функции GetByID
-func (mr *MockRedisRepositoryMockRecorder) GetByID(ctx, bannerID interface{}) *gomock.Call {
+func (mr *MockUseCaseMockRecorder) GetByID(ctx, bannerID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(
 		mr.mock, "GetByID", reflect.TypeOf((*MockRepository)(nil).GetByID),
@@ -88,7 +89,7 @@ func (m *MockUseCase) GetAll(ctx context.Context, opts *models.BannerOptions) ([
 }
 
 // Указывает на ожидаемый результат функции GetAll
-func (mr *MockRedisRepositoryMockRecorder) GetAll(ctx, opts interface{}) *gomock.Call {
+func (mr *MockUseCaseMockRecorder) GetAll(ctx, opts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(
 		mr.mock, "GetAll", reflect.TypeOf((*MockRepository)(nil).GetAll),

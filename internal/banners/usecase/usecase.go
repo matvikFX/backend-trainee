@@ -42,7 +42,7 @@ func (uc *bannersUC) GetContent(ctx context.Context, tagID, featureID int, last_
 		banner := &models.BannerRequest{}
 		banner, err := uc.redisRepo.GetBanner(ctx, featureID, tagID)
 		if err == nil {
-			return &banner.Content, nil
+			return banner.Content, nil
 		} // else В redis нет записи данного баннера
 	}
 
@@ -73,8 +73,14 @@ func (uc *bannersUC) GetAll(ctx context.Context, opts *models.BannerOptions) ([]
 }
 
 func (uc *bannersUC) Update(ctx context.Context, bannerID int, banner *models.BannerRequest) error {
-	if err := uc.redisRepo.SetBanner(ctx, bannerID, banner); err != nil {
-		return err
+	if !banner.IsActive {
+		if err := uc.redisRepo.DeleteBanner(ctx, bannerID); err != nil {
+			return err
+		}
+	} else {
+		if err := uc.redisRepo.UpdateBanner(ctx, bannerID, banner); err != nil {
+			return err
+		}
 	}
 
 	if err := uc.psqlRepo.Update(ctx, bannerID, banner); err != nil {

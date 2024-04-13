@@ -7,13 +7,13 @@ import (
 	"time"
 )
 
-type BannerContent map[string]interface{}
+type BannerContent map[string]any
 
 func (content BannerContent) Value() (driver.Value, error) {
 	return json.Marshal(content)
 }
 
-func (content *BannerContent) Scan(value interface{}) error {
+func (content *BannerContent) Scan(value any) error {
 	b, ok := value.([]byte)
 	if !ok {
 		return errors.New("type assertion to []byte failed")
@@ -23,20 +23,20 @@ func (content *BannerContent) Scan(value interface{}) error {
 }
 
 type BannerRequest struct {
-	TagIDs    []int         `json:"tag_ids,omitempty" query:"tag_ids,omitempty"`
-	FeatureID int           `json:"feature_id,omitempty" query:"feature_id,omitempty"`
-	IsActive  bool          `json:"is_active,omitempty" query:"is_active,omitempty"`
-	Content   BannerContent `json:"content"`
+	TagIDs    []int          `json:"tag_ids,omitempty" query:"tag_ids,omitempty"`
+	FeatureID int            `json:"feature_id,omitempty" query:"feature_id,omitempty"`
+	IsActive  bool           `json:"is_active,omitempty" query:"is_active,omitempty"`
+	Content   *BannerContent `json:"content"`
 }
 
 type Banner struct {
-	ID        int           `json:"banner_id"`
-	TagIDs    []int         `json:"tag_ids"`
-	FeatureID int           `json:"feature_id"`
-	IsActive  bool          `json:"is_active"`
-	Content   BannerContent `json:"content"`
-	CreatedAt time.Time     `json:"created_at"`
-	UpdatedAt time.Time     `json:"updated_at"`
+	ID        int            `json:"banner_id"`
+	TagIDs    []int          `json:"tag_ids"`
+	FeatureID int            `json:"feature_id"`
+	IsActive  bool           `json:"is_active"`
+	Content   *BannerContent `json:"content"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
 }
 
 type BannerOptions struct {
@@ -47,15 +47,15 @@ type BannerOptions struct {
 }
 
 func NewBannerOpts(featureID, tagID, limit, offset int) *BannerOptions {
-	banner := BannerOptions{
+	opts := BannerOptions{
 		FeatureID: featureID,
 		TagID:     tagID,
 		Limit:     limit,
 		Offset:    offset,
 	}
-	banner.init()
+	opts.init()
 
-	return &banner
+	return &opts
 }
 
 func (opts *BannerOptions) init() {
@@ -73,5 +73,14 @@ func (opts *BannerOptions) init() {
 
 	if opts.Offset < 0 {
 		opts.Offset = 0
+	}
+}
+
+func defaultOpts() BannerOptions {
+	return BannerOptions{
+		TagID:     0,
+		FeatureID: 0,
+		Limit:     10,
+		Offset:    0,
 	}
 }

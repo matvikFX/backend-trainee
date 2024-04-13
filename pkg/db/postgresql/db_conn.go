@@ -10,7 +10,6 @@ import (
 )
 
 func NewPsqlDB(cfg *config.Config) (*sql.DB, error) {
-	// connStr := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s",
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		cfg.Postgres.User, cfg.Postgres.Pass,
 		cfg.Postgres.Host, cfg.Postgres.Port,
@@ -26,5 +25,5 @@ func NewPsqlDB(cfg *config.Config) (*sql.DB, error) {
 		return nil, err
 	}
 
-	return nil, nil
+	return db, nil
 }

@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 	"strings"
@@ -22,7 +23,7 @@ func NewBannersHandlers(cfg *config.Config, uc banners.UseCase) banners.Handlers
 }
 
 // Middleware
-func (h bannersHandlers) UserAuth(next echo.HandlerFunc) echo.HandlerFunc {
+func (h bannersHandlers) AdminAuth(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		if tokenString := c.Request().Header["Token"]; tokenString != nil {
 			if strings.Split(tokenString[0], "_")[0] == "admin" {
@@ -36,10 +37,24 @@ func (h bannersHandlers) UserAuth(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
+func (h bannersHandlers) UserAuth(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		if tokenString := c.Request().Header["Token"]; tokenString != nil {
+			if rights := strings.Split(tokenString[0], "_")[0]; rights == "admin" || rights == "user" {
+				return next(c)
+			} else {
+				return c.JSON(http.StatusForbidden, "Пользователь не имеет доступа")
+			}
+		} else {
+			return c.JSON(http.StatusUnauthorized, "Пользователь не авторизован")
+		}
+	}
+}
+
 // Handlers
 func (h bannersHandlers) Create() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx := c.Request().Context()
+		ctx := GetReqCtx(c)
 
 		bannerReq := &models.BannerRequest{}
 		if err := c.Bind(bannerReq); err != nil {
@@ -57,7 +72,7 @@ func (h bannersHandlers) Create() echo.HandlerFunc {
 
 func (h bannersHandlers) GetContent() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx := c.Request().Context()
+		ctx := GetReqCtx(c)
 
 		tagID, err := strconv.Atoi(c.QueryParam("tag_id"))
 		if err != nil {
@@ -86,9 +101,27 @@ func (h bannersHandlers) GetContent() echo.HandlerFunc {
 	}
 }
 
+func (h bannersHandlers) GetByID() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := GetReqCtx(c)
+
+		bannerID, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, "Некорректные данные")
+		}
+
+		banner, err := h.bannersUC.GetByID(ctx, bannerID)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, err.Error())
+		}
+
+		return c.JSON(http.StatusOK, banner)
+	}
+}
+
 func (h bannersHandlers) GetAll() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx := c.Request().Context()
+		ctx := GetReqCtx(c)
 
 		tagID, err := strconv.Atoi(c.QueryParam("tag_id"))
 		if err != nil && c.QueryParam("tag_id") != "" {
@@ -116,7 +149,7 @@ func (h bannersHandlers) GetAll() echo.HandlerFunc {
 
 		banners, err := h.bannersUC.GetAll(ctx, bannerOpts)
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, "")
+			return c.JSON(http.StatusInternalServerError, err.Error())
 		}
 
 		return c.JSON(http.StatusOK, banners)
@@ -125,7 +158,7 @@ func (h bannersHandlers) GetAll() echo.HandlerFunc {
 
 func (h bannersHandlers) Update() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx := c.Request().Context()
+		ctx := GetReqCtx(c)
 
 		bannerID, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
@@ -147,7 +180,7 @@ func (h bannersHandlers) Update() echo.HandlerFunc {
 
 func (h bannersHandlers) Delete() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx := c.Request().Context()
+		ctx := GetReqCtx(c)
 
 		bannerID, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
@@ -160,4 +193,13 @@ func (h bannersHandlers) Delete() echo.HandlerFunc {
 
 		return c.NoContent(http.StatusNoContent)
 	}
+}
+
+func GetReqCtx(c echo.Context) context.Context {
+	type ReqIDCtxKey struct{}
+
+	parent := c.Request().Context()
+	key := ReqIDCtxKey{}
+	val := c.Response().Header().Get(echo.HeaderXRequestID)
+	return context.WithValue(parent, key, val)
 }

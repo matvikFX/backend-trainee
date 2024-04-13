@@ -37,7 +37,7 @@ func (r *redisRepo) SetBanner(ctx context.Context, bannerID int, banner *models.
 
 	// {"bannerID": "banner"}
 	bannerKey := strconv.Itoa(bannerID)
-	if err := r.client.Set(ctx, bannerKey, newBytes, time.Minute*10).Err(); err != nil {
+	if err := r.client.Set(ctx, bannerKey, newBytes, time.Minute*5).Err(); err != nil {
 		return err
 	}
 
@@ -67,17 +67,9 @@ func (r *redisRepo) GetBanner(ctx context.Context, featureID, tagID int) (*model
 }
 
 func (r *redisRepo) DeleteBanner(ctx context.Context, bannerID int) error {
-	pattern := fmt.Sprintf("%d:*", bannerID)
-	_ = pattern
-	keys, err := r.client.Keys(ctx, pattern).Result()
-	if err != nil {
+	bannerKey := strconv.Itoa(bannerID)
+	if err := r.client.Del(ctx, bannerKey).Err(); err != nil {
 		return err
-	}
-
-	for _, key := range keys {
-		if err := r.client.Del(ctx, key).Err(); err != nil {
-			return err
-		}
 	}
 
 	return nil
@@ -93,13 +85,4 @@ func (r *redisRepo) UpdateBanner(ctx context.Context, bannerID int, banner *mode
 	}
 
 	return nil
-}
-
-func (r *redisRepo) makeBannerKey(bannerID, featureID int, tagIDs []int) string {
-	bannerKey := fmt.Sprintf("bannerID=%d:featureID=%d;tagIDs=", bannerID, featureID)
-	for _, tagID := range tagIDs {
-		bannerKey += fmt.Sprintf("%d,", tagID)
-	}
-
-	return bannerKey
 }

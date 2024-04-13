@@ -32,10 +32,9 @@ func NewServer(cfg *config.Config, db *sql.DB, rc *redis.Client) *Server {
 }
 
 func (s *Server) Run() error {
+	addr := s.cfg.Server.Host + ":" + s.cfg.Server.Port
 	server := &http.Server{
-		Addr:         s.cfg.Server.Port,
-		ReadTimeout:  s.cfg.Server.ReadTimeout,
-		WriteTimeout: s.cfg.Server.WriteTimeout,
+		Addr: addr,
 	}
 
 	go func() {

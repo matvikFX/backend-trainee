@@ -7,12 +7,8 @@ import (
 )
 
 func MapBannersRoutes(bannersRouter *echo.Group, h banners.Handlers) {
-	// Пока пусть здесь будет, потом может че придумаю
-	// bannersRouter.GET("/user", h.GetContent())
-
-	// Нормальные
-	bannersRouter.POST("", h.Create(), h.UserAuth)
-	bannersRouter.GET("", h.GetAll(), h.UserAuth)
-	bannersRouter.PATCH("/:id", h.Update(), h.UserAuth)
-	bannersRouter.DELETE("/:id", h.Delete(), h.UserAuth)
+	bannersRouter.POST("", h.Create(), h.AdminAuth)
+	bannersRouter.GET("", h.GetAll(), h.AdminAuth)
+	bannersRouter.PATCH("/:id", h.Update(), h.AdminAuth)
+	bannersRouter.DELETE("/:id", h.Delete(), h.AdminAuth)
 }

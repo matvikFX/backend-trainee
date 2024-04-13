@@ -38,7 +38,7 @@ func TestRedisRepo_SetBanner(t *testing.T) {
 			TagIDs:    []int{1, 2},
 			FeatureID: 1,
 			IsActive:  true,
-			Content: models.BannerContent{
+			Content: &models.BannerContent{
 				"title": "test",
 			},
 		}
@@ -59,7 +59,7 @@ func TestRedisRepo_GetBanner(t *testing.T) {
 		banner := &models.BannerRequest{
 			FeatureID: 1,
 			TagIDs:    []int{1, 2},
-			Content: models.BannerContent{
+			Content: &models.BannerContent{
 				"title": "test",
 				"text":  "newText",
 			},
@@ -106,7 +106,7 @@ func TestRedisRepo_UpdateBanner(t *testing.T) {
 			TagIDs:    []int{1, 2},
 			FeatureID: 1,
 			IsActive:  true,
-			Content: models.BannerContent{
+			Content: &models.BannerContent{
 				"title": "test",
 				"text":  "newText",
 			},
